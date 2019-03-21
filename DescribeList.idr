@@ -9,7 +9,7 @@ total listLast: (xs: List a) -> ListLast xs
 listLast [] = Empty
 listLast (x :: xs) = case listLast xs of
   Empty => NonEmpty [] x
-  (NonEmpty ys y) => NonEmpty (x :: ys) y  
+  (NonEmpty ys y) => NonEmpty (x :: ys) y
 
 total describeHelper: (input: List Int) -> (form: ListLast input) -> String
 describeHelper []          Empty           = "Empty"
@@ -34,7 +34,14 @@ total splitList: (input: List a) -> SplitList input
 splitList input = splitListHelp input input
   where
     splitListHelp: List a -> (input: List a) -> SplitList input
-    ?splitList_rhs
+    splitListHelp _  []  = SplitNil
+    splitListHelp _  [x] = SplitOne
+    splitListHelp (_ :: _ :: counter) (item :: items) =
+      case splitListHelp counter items of
+        SplitNil               => SplitOne
+        SplitOne {x}           => SplitPair [item] [x]
+        SplitPair lefts rights => SplitPair (item :: lefts) rights
+    splitListHelp _ items = SplitPair [] items
 
 mergeSort: Ord a => List a -> List a
 mergeSort input with (splitList input)
@@ -42,3 +49,6 @@ mergeSort input with (splitList input)
   mergeSort [x] | SplitOne = [x]
   mergeSort (lefts ++ rights) | (SplitPair lefts rights) =
     merge (mergeSort lefts) (mergeSort rights)
+
+example: List Int
+example = [6,5,4,3,3,1,3,7,3,4,5,1,2,1,2,4,6,9,6]
