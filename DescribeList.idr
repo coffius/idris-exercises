@@ -1,3 +1,5 @@
+import Data.List.Views
+
 list1: List Int
 list1 = [1,2,3]
 
@@ -49,6 +51,15 @@ mergeSort input with (splitList input)
   mergeSort [x] | SplitOne = [x]
   mergeSort (lefts ++ rights) | (SplitPair lefts rights) =
     merge (mergeSort lefts) (mergeSort rights)
+
+total mergeSort2: Ord a => List a -> List a
+mergeSort2 input with (splitRec input)
+  mergeSort2 []   | SplitRecNil = []
+  mergeSort2 [x]  | SplitRecOne = [x]
+  mergeSort2 (lefts ++ rights) | (SplitRecPair lrec rrec) =
+    merge (mergeSort2 lefts  | lrec)
+          (mergeSort2 rights | rrec)
+
 
 example: List Int
 example = [6,5,4,3,3,1,3,7,3,4,5,1,2,1,2,4,6,9,6]
