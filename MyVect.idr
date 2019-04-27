@@ -61,7 +61,7 @@ tailUnequal contra Refl = contra Refl
 DecEq a => DecEq (MyVect n a) where
   decEq [] [] = Yes Refl
   decEq (x :: xs) (y :: ys) = case decEq x y of
-    Yes Refl => case decEq xs ys of 
+    Yes Refl => case decEq xs ys of
       Yes Refl  => Yes Refl
       No contra => No (tailUnequal contra)
     No contra => No (headUnequal contra)
@@ -85,4 +85,3 @@ natEqual (S k) Z = Nothing
 natEqual (S k) (S j) = case natEqual k j of
   Nothing => Nothing
   (Just prf) => Just (cong prf)
-
