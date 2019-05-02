@@ -14,41 +14,65 @@ forever = More forever
 data Command : Type -> Type where
   PutStr  : String -> Command ()
   GetLine : Command String
+  Bind : Command a -> (a -> Command b) -> Command b
+  Pure : a -> Command a
 
 data ConsoleIO : Type -> Type where
   Quit : a -> ConsoleIO a
   Do   : Command a -> (a -> Inf(ConsoleIO b)) -> ConsoleIO b
 
-(>>=) : Command a -> (a -> Inf(ConsoleIO b)) -> ConsoleIO b
-(>>=) = Do
+data Input = Answer Int | QuitCmd
 
-runCommand : Command a -> IO a
-runCommand (PutStr x) = putStr x
-runCommand GetLine    = getLine
+namespace CommandDo
+  (>>=) : Command a -> (a -> Command b) -> Command b
+  (>>=) = Bind
+
+namespace ConsoleDo
+  (>>=) : Command a -> (a -> Inf(ConsoleIO b)) -> ConsoleIO b
+  (>>=) = Do
+
+
+readInput: (prompt: String) -> Command Input
+readInput prompt =
+  do
+    PutStr prompt
+    answer <- GetLine
+    if toLower answer == "quit"
+      then Pure QuitCmd
+      else Pure (Answer (cast answer))
+
+runCommand : Command ty -> IO ty
+runCommand (PutStr x)       = putStr x
+runCommand GetLine          = getLine
+runCommand (Bind cmdA func) =
+  do
+    res <- runCommand cmdA
+    runCommand (func res)
+runCommand (Pure x)       = pure x
 
 run : Fuel -> ConsoleIO a -> IO (Maybe a)
 run Dry      _                = pure Nothing
 run (More fuel) (Quit res)    = pure (Just res)
 run (More fuel) (Do cmd func) =
-  do 
+  do
     cmdRes <- runCommand cmd
     let res = func cmdRes
     run fuel res
 
 quiz : Stream Int -> (score: Nat) -> ConsoleIO Nat
-quiz (num1 :: num2 :: nums) score = 
+quiz (num1 :: num2 :: nums) score =
   do
     PutStr ("Score so far: " ++ show score ++ "\n")
-    PutStr (show num1 ++ " * " ++ show num2 ++ " = ? ")
-    input <- GetLine
-    if toLower input == "quit" 
-      then Quit score
-      else 
-        if cast input == num1 * num2
-          then do PutStr "Correct!\n"
+    input <- readInput (show num1 ++ " * " ++ show num2 ++ " = ? ")
+    case input of
+      Answer answer => 
+        if answer == num1 * num2
+          then do PutStr ("Correct!")
                   quiz nums (score + 1)
           else do PutStr ("Wrong! The answer is " ++ show (num1 * num2) ++ "\n")
                   quiz nums score
+      QuitCmd  => Quit score
+
 
 randoms : Int -> Stream Int
 randoms seed =
