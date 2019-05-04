@@ -17,6 +17,16 @@ data Command : Type -> Type where
   Bind : Command a -> (a -> Command b) -> Command b
   Pure : a -> Command a
 
+implementation Functor Command where
+  map func cmdA = Bind cmdA (\valA => Pure (func valA))
+
+implementation Applicative Command where
+  pure valA = Pure valA
+  (<*>) cmdAB cmdA = Bind cmdAB (\funcAB => map funcAB cmdA)
+
+implementation Monad Command where
+  (>>=) = Bind
+
 data ConsoleIO : Type -> Type where
   Quit : a -> ConsoleIO a
   Do   : Command a -> (a -> Inf(ConsoleIO b)) -> ConsoleIO b
