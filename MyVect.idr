@@ -1,3 +1,5 @@
+module MyVect
+
 data MyVect : (len: Nat) -> (elem: Type) -> Type where
   Nil  : MyVect 0 elem
   (::) : (e: elem) -> (tail: MyVect len elem) -> MyVect (S len) elem
@@ -66,17 +68,33 @@ DecEq a => DecEq (MyVect n a) where
       No contra => No (tailUnequal contra)
     No contra => No (headUnequal contra)
 
+sameLen: (first: MyVect n a) -> (second: MyVect m a) -> (first = second) -> (n = m)
+sameLen second second Refl = Refl
+
 example1: MyVect 4 Integer
 example1 = 1 :: 2 :: 3 :: 4 :: Nil
 
-example1': MyVect 4 Integer
-example1' = 1 :: 2 :: 3 :: 4 :: Nil
+example2: MyVect 4 Integer
+example2 = 1 :: 2 :: 3 :: 4 :: Nil
 
-example2: MyVect 3 Integer
-example2 = 1 :: 2 :: 3 :: Nil
+-- One number less
+example3: MyVect 3 Integer
+example3 = 1 :: 2 :: 3 :: Nil
 
-example3: MyVect 4 Integer
-example3 = 4 :: 3 :: 2 :: 1 :: Nil
+example4: MyVect 4 Integer
+example4 = 1 :: 2 :: 3 :: 5 :: Nil
+
+correctProof: (MyVect.example1 = MyVect.example2)
+correctProof = case decEq MyVect.example1 MyVect.example2 of 
+  Yes Refl => Refl
+
+-- incorrectProof: (MyVect.example1 = MyVect.example2)
+-- incorrectProof = case decEq MyVect.example1 MyVect.example2 of 
+--   Yes Refl => Refl
+
+-- incorrectProof2: (MyVect.example1 = MyVect.example3)
+-- incorrectProof2 = case decEq MyVect.example1 MyVect.example3 of 
+--   Yes Refl => Refl
 
 natEqual: (x: Nat) -> (y: Nat) -> Maybe(x = y)
 natEqual Z Z = Just Refl

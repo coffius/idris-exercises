@@ -70,5 +70,5 @@ main =
     do
       result <- game {guesses=2} wordToGuess
       case result of
-        (Lost (MkWordState word missing)) => putStrLn ("You lost. The word was" ++ word)
+        (Lost (MkWordState word missing)) => putStrLn ("You lost. The word was " ++ word)
         (Won game) => putStrLn "You win"
