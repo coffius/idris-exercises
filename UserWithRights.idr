@@ -53,6 +53,9 @@ checkUserRights user reqAction =
 ActionResult: Type
 ActionResult = Either String Ware
 
+-- Runtime check that a user has a right (CreateNew) to create a new ware
+-- In this case we are not sure if the user has the needed right
+-- So it is necessary to check that explicitly 
 createNewWare: (name: String) -> (price: Double) -> (user: User) -> ActionResult
 createNewWare name price user = case checkUserRights user CreateNew of
   False => Left  ("Have no rights")
@@ -80,14 +83,24 @@ proveUserRights userActions req = isElem req userActions
 proveUserAccess: (user: User) -> (req: WareAction) -> Dec (HasAccess user req)
 proveUserAccess user req = proveUserRights (roleToActions(role user)) req
 
-createProved: (user: User) -> (prf: ContainsAccess user CreateNew) -> Ware
-createProved user (Positive user CreateNew x) = ?createProved_rhs_1
+-- Compile time check that a user has a right (CreateNew) to create a new ware
+-- In this case that proof guards the function from being called from an arbitrary place
+-- It is possible to call it only if a caller has a proof that the user has the right 
+createProved: (name: String) -> (price: Double) -> (user: User) -> (prf: ContainsAccess user CreateNew) -> Ware
+createProved name price user {prf} = MkWare name price
+
 
 testGuest: User
 testGuest = MkUser "Test" "Guest" Guest
 
 testSuperUser: User
 testSuperUser = MkUser "Test" "SuperUser" SuperUser
+
+-- Compile-time proof that `Main.testSuperUser` has the `CreateNew` right
+superUserCanCreate: ContainsAccess Main.testSuperUser CreateNew
+superUserCanCreate = Positive Main.testSuperUser CreateNew Here
+
+-- Show: createProved "test_ware" 1.0 testSuperUser superUserCanCreate
 
 guestCreatesWare: ActionResult
 guestCreatesWare = createNewWare "Test Ware" 10.0 testGuest

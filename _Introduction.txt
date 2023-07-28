@@ -1,0 +1,13 @@
+0. Goals:
+  - Introduce Idris and dependent types
+  - Show simple but interesting examples of using dependent types in practice
+1. Nat numbers
+  - basic syntax and definitions
+  - Nat numbers as a structure
+    - https://en.wikipedia.org/wiki/Unary_numeral_system
+    - Peano numbers
+2. MyVect
+  - List with a compile time length
+  - operations over MyVect
+3. Proofs over MyVect
+4. User access rights
